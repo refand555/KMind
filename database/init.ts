@@ -13,7 +13,8 @@ export const initDB = () => {
     CREATE TABLE IF NOT EXISTS parts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
-      motor_type TEXT
+      motor_type TEXT,
+      interval_km INTEGER
     );
 
     CREATE TABLE IF NOT EXISTS motor_parts (
@@ -25,3 +26,4 @@ export const initDB = () => {
     );
   `);
 };
+  

@@ -1,9 +1,8 @@
 import { db } from "./db";
 
 export const seedParts = () => {
-  // 🔹 Cek dulu biar tidak double insert
   const existing = db.getFirstSync(
-    "SELECT COUNT(*) as count FROM parts"
+    "SELECT COUNT(*) as count FROM parts",
   ) as any;
 
   if (existing?.count > 0) {
@@ -12,35 +11,27 @@ export const seedParts = () => {
   }
 
   const parts = [
-    // 🔵 MATIC
-    ["Oli mesin", "Matic"],
-    ["Oli gardan", "Matic"],
-    ["V-Belt", "Matic"],
-    ["Aki", "Matic"],
-    ["CVT", "Matic"],
+    ["Oli mesin", "Matic", 2000],
+    ["Oli gardan", "Matic", 8000],
+    ["V-Belt", "Matic", 25000],
+    ["Aki", "Matic", 20000],
+    ["CVT", "Matic", 10000],
 
-    // 🟡 MANUAL
-    ["Oli mesin", "Manual"],
-    ["Setelan klep", "Manual"],
-    ["Kampas rem depan", "Manual"],
-    ["Kampas rem belakang", "Manual"],
-    ["Rantai & gear set", "Manual"],
-    ["Kampas kopling otomatis (semi kopling)", "Manual"],
+    ["Oli mesin", "Manual", 2000],
+    ["Setelan klep", "Manual", 10000],
+    ["Kampas rem depan", "Manual", 15000],
+    ["Kampas rem belakang", "Manual", 15000],
+    ["Rantai & gear set", "Manual", 20000],
 
-    // 🔴 KOPLING / SPORT
-    ["Oli mesin", "Kopling"],
-    ["Rantai & Gear set", "Kopling"],
-    ["Kampas kopling manual", "Kopling"],
-    ["Kampas rem depan", "Kopling"],
-    ["Kampas rem belakang", "Kopling"],
-    ["Setelan Tuas kopling", "Kopling"],
-    
+    ["Oli mesin", "Kopling", 2000],
+    ["Rantai & Gear set", "Kopling", 20000],
+    ["Kampas kopling manual", "Kopling", 25000],
   ];
 
-  parts.forEach(([name, type]) => {
+  parts.forEach(([name, type, interval]) => {
     db.runSync(
-      "INSERT INTO parts (name, motor_type) VALUES (?, ?)",
-      [name, type]
+      "INSERT INTO parts (name, motor_type, interval_km) VALUES (?, ?, ?)",
+      [name, type, interval],
     );
   });
 

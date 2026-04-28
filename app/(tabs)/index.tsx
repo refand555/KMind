@@ -1,13 +1,13 @@
+import { getMotors } from "@/database/repository/motorRepo";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import {
-  View,
-  Text,
   FlatList,
+  Text,
   TouchableOpacity,
   useColorScheme,
+  View,
 } from "react-native";
-import { useRouter, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
-import { getMotors } from "@/database/repository/motorRepo";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function HomeScreen() {
       const motors = getMotors();
       setData(motors);
       console.log("DATA LOADED:", motors);
-    }, [])
+    }, []),
   );
 
   return (
@@ -42,41 +42,36 @@ export default function HomeScreen() {
           </Text>
         )}
         renderItem={({ item }) => (
-          <View
-            style={{
-              backgroundColor: isDark ? "#1e1e1e" : "#fff",
-              padding: 16,
-              borderRadius: 12,
-              marginBottom: 10,
-            }}
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: "/motor-detail",
+                params: { id: item.id },
+              })
+            }
           >
-            <Text
+            <View
               style={{
-                fontSize: 16,
-                fontWeight: "bold",
-                color: isDark ? "#fff" : "#000",
+                backgroundColor: isDark ? "#1e1e1e" : "#fff",
+                padding: 16,
+                borderRadius: 12,
+                marginBottom: 10,
               }}
             >
-              {item.name}
-            </Text>
-
-            <Text style={{ color: isDark ? "#ccc" : "#333" }}>
-              KM: {item.km_now}
-            </Text>
-
-            <Text style={{ color: isDark ? "#ccc" : "#333" }}>
-              Tipe: {item.type}
-            </Text>
-          </View>
+              <Text style={{ color: isDark ? "#fff" : "#000" }}>
+                {item.name}
+              </Text>
+            </View>
+          </TouchableOpacity>
         )}
       />
-
       <TouchableOpacity
         onPress={() => router.push("/add-motor")}
         style={{
           backgroundColor: "#007AFF",
           padding: 16,
           borderRadius: 12,
+          marginTop: 16,
         }}
       >
         <Text style={{ color: "#fff", textAlign: "center" }}>
