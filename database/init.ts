@@ -1,6 +1,14 @@
 import { db } from "./db";
 
 export const initDB = () => {
+  // 💣 RESET DATABASE (DEV ONLY)
+  // db.execSync(`
+  //   DROP TABLE IF EXISTS motor_parts;
+  //   DROP TABLE IF EXISTS parts;
+  //   DROP TABLE IF EXISTS motors;
+  // `);
+
+  // 🔧 CREATE TABLE BARU
   db.execSync(`
     CREATE TABLE IF NOT EXISTS motors (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,5 +33,5 @@ export const initDB = () => {
       km_terakhir INTEGER
     );
   `);
+  console.log(db.getAllSync("PRAGMA table_info(parts)"));
 };
-  
