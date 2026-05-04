@@ -9,6 +9,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Picker } from "@react-native-picker/picker";
+import { useMotorFormStore } from "@/store/motorFormStore";
 
 import PartItem from "@/components/Partitem";
 import { MotorPart } from "@/types/motor";
@@ -17,6 +18,7 @@ import { getPartsByType } from "@/database/repository/partRepo";
 import { createMotorWithParts } from "@/database/service";
 
 export default function SetupPartsScreen() {
+  const { name, type, km, usage } = useMotorFormStore();
   const params = useLocalSearchParams();
   const router = useRouter();
   const scheme = useColorScheme();
@@ -29,17 +31,11 @@ export default function SetupPartsScreen() {
 
   // 🔹 AMBIL PARTS SESUAI JENIS MOTOR
   useEffect(() => {
-  if (!params.type) return;
-
-  const type = (params.type as string).trim();
+  if (!type) return;
 
   const data = getPartsByType(type);
-
-  console.log("TYPE:", type);
-  console.log("PARTS:", data);
-
   setPartsList(data);
-}, [params.type]);
+}, [type]); // 🔥 INI KUNCINYA
 
   // 🔹 FILTER PART YANG BELUM DIPILIH
   const availableParts = partsList.filter(
@@ -54,7 +50,7 @@ export default function SetupPartsScreen() {
       ...selectedParts,
       {
         part_id: selectedPartId,
-        status: "baru",
+        status: "Baru Ganti",
         km_terakhir: null,
       },
     ]);
@@ -64,23 +60,57 @@ export default function SetupPartsScreen() {
 
   // 🔹 SIMPAN
   const handleSave = () => {
-    if (selectedParts.length === 0) {
-      Alert.alert("Error", "Pilih minimal 1 bagian");
-      return;
+  if (selectedParts.length === 0) {
+    Alert.alert("Error", "Pilih minimal 1 bagian");
+    return;
+  }
+
+  const motorData = {
+    name,
+    type,
+    km: Number(km),
+    usage: Number(usage),
+  };
+
+  const today = new Date();
+
+  // 🔥 PROSES PART (INI INTI)
+  const processedParts = selectedParts.map((p) => {
+    // 🟢 BARU GANTI → pakai km_now
+    if (p.status === "Baru Ganti") {
+      return {
+        ...p,
+        km_terakhir: Number(km), // 🔥 ambil dari motor
+        reminder_date: null,
+      };
     }
 
-    const motorData = {
-      name: params.name,
-      type: params.type,
-      km: Number(params.km),
-      usage: Number(params.usage),
-    };
+    // 🟡 BARU GANTI DI KM → pakai input user
+    if (p.status === "Baru Ganti di KM") {
+      return {
+        ...p,
+        reminder_date: null,
+      };
+    }
 
-    createMotorWithParts(motorData, selectedParts);
+    // 🔴 TIDAK TAHU → buat reminder 3 hari
+    if (p.status === "Tidak Tahu") {
+      const reminder = new Date();
+      reminder.setDate(today.getDate() + 3);
 
-    Alert.alert("Berhasil", "Motor berhasil disimpan");
-    router.replace("/");
-  };
+      return {
+        ...p,
+        km_terakhir: null,
+        reminder_date: reminder.toISOString(),
+      };
+    }
+
+    return p;
+  });
+
+  // 🔥 SIMPAN KE DB
+  createMotorWithParts(motorData, processedParts);
+};
 
   return (
     <View
@@ -90,6 +120,19 @@ export default function SetupPartsScreen() {
         backgroundColor: isDark ? "#121212" : "#f5f5f5",
       }}
     >
+
+      <TouchableOpacity
+        onPress={() => router.back()}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 16,
+        }}
+      >
+        <Text style={{ fontSize: 40, marginRight: 6, color : "#007AFF" }}>←</Text>
+
+      </TouchableOpacity>
+
       <Text
         style={{
           fontSize: 18,
@@ -101,6 +144,38 @@ export default function SetupPartsScreen() {
         Setup Bagian ({params.type})
       </Text>
 
+      <View
+        style={{
+          backgroundColor: isDark ? "#1e1e1e" : "#fff",
+          padding: 16,
+          borderRadius: 12,
+          marginBottom: 16,
+        }}
+      >
+        <Text
+          style={{
+            fontWeight: "bold",
+            marginBottom: 8,
+            color: isDark ? "#fff" : "#000",
+          }}
+        >
+          Data Motor
+        </Text>
+
+        <Text style={{ color: isDark ? "#ccc" : "#333" }}>
+          Nama: {name}
+        </Text>
+        <Text style={{ color: isDark ? "#ccc" : "#333" }}>
+          Jenis: {type}
+        </Text>
+        <Text style={{ color: isDark ? "#ccc" : "#333" }}>
+          KM Sekarang: {km}
+        </Text>
+        <Text style={{ color: isDark ? "#ccc" : "#333" }}>
+          KM/Hari: {usage}
+        </Text>
+      </View>
+
       {/* 🔽 DROPDOWN PILIH PART */}
       <View
         style={{
@@ -111,6 +186,7 @@ export default function SetupPartsScreen() {
           marginBottom: 10,
         }}
       >
+        
         <Picker
           selectedValue={selectedPartId}
           onValueChange={(val) => setSelectedPartId(val)}

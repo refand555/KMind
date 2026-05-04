@@ -6,20 +6,16 @@ import {
   useColorScheme,
   Alert,
 } from "react-native";
-import { useState } from "react";
 import { useRouter } from "expo-router";
 import { Picker } from "@react-native-picker/picker";
-import { MotorType } from "@/types/motor";
+import { useMotorFormStore } from "@/store/motorFormStore";
 
 export default function AddMotorScreen() {
   const router = useRouter();
   const scheme = useColorScheme();
   const isDark = scheme === "dark";
 
-  const [name, setName] = useState("");
-  const [type, setType] = useState<MotorType | "">("");
-  const [km, setKm] = useState("");
-  const [usage, setUsage] = useState("");
+  const { name, type, km, usage, setForm } = useMotorFormStore();
 
   const inputStyle = {
     backgroundColor: isDark ? "#1e1e1e" : "#fff",
@@ -32,20 +28,12 @@ export default function AddMotorScreen() {
   };
 
   const handleNext = () => {
-    if (!name || !km || !usage || !type) {
+    if (!name || !type || !km || !usage) {
       Alert.alert("Error", "Semua field harus diisi");
       return;
     }
 
-    router.push({
-      pathname: "/setup-parts",
-      params: {
-        name,
-        type,
-        km,
-        usage,
-      },
-    });
+    router.push("/setup-parts");
   };
 
   return (
@@ -56,6 +44,19 @@ export default function AddMotorScreen() {
         backgroundColor: isDark ? "#121212" : "#f5f5f5",
       }}
     >
+
+      <TouchableOpacity
+        onPress={() => router.back()}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 16,
+        }}
+      >
+        <Text style={{ fontSize: 40, marginRight: 6, color : "#007AFF" }}>←</Text>
+
+      </TouchableOpacity>
+
       <Text
         style={{
           fontSize: 18,
@@ -67,18 +68,22 @@ export default function AddMotorScreen() {
         Tambah Motor
       </Text>
 
-      {/* Nama Motor */}
-      <Text style={{ color: isDark ? "#ccc" : "#000" }}>Nama Motor</Text>
+      {/* Nama */}
+      <Text style={{ color: isDark ? "#ccc" : "#000" }}>
+        Nama Motor
+      </Text>
       <TextInput
         placeholder="Contoh: Beat 2022"
         placeholderTextColor="#888"
         value={name}
-        onChangeText={setName}
+        onChangeText={(val) => setForm({ name: val })}
         style={inputStyle}
       />
 
-      {/* Jenis Motor (Dropdown) */}
-      <Text style={{ color: isDark ? "#ccc" : "#000" }}>Jenis Motor</Text>
+      {/* Jenis */}
+      <Text style={{ color: isDark ? "#ccc" : "#000" }}>
+        Jenis Motor
+      </Text>
       <View
         style={{
           backgroundColor: isDark ? "#1e1e1e" : "#fff",
@@ -90,11 +95,9 @@ export default function AddMotorScreen() {
       >
         <Picker
           selectedValue={type}
-          onValueChange={(itemValue) => setType(itemValue)}
+          onValueChange={(val) => setForm({ type: val })}
           dropdownIconColor={isDark ? "#fff" : "#000"}
-          style={{
-            color: isDark ? "#fff" : "#000",
-          }}
+          style={{ color: isDark ? "#fff" : "#000" }}
         >
           <Picker.Item label="Pilih jenis motor..." value="" />
           <Picker.Item label="Matic" value="Matic" />
@@ -103,18 +106,20 @@ export default function AddMotorScreen() {
         </Picker>
       </View>
 
-      {/* KM Sekarang */}
-      <Text style={{ color: isDark ? "#ccc" : "#000" }}>KM Sekarang</Text>
+      {/* KM */}
+      <Text style={{ color: isDark ? "#ccc" : "#000" }}>
+        KM Sekarang
+      </Text>
       <TextInput
         placeholder="Contoh: 12000"
         placeholderTextColor="#888"
         value={km}
-        onChangeText={setKm}
+        onChangeText={(val) => setForm({ km: val })}
         keyboardType="numeric"
         style={inputStyle}
       />
 
-      {/* KM per hari */}
+      {/* Usage */}
       <Text style={{ color: isDark ? "#ccc" : "#000" }}>
         Rata-rata KM per hari
       </Text>
@@ -122,12 +127,11 @@ export default function AddMotorScreen() {
         placeholder="Contoh: 20"
         placeholderTextColor="#888"
         value={usage}
-        onChangeText={setUsage}
+        onChangeText={(val) => setForm({ usage: val })}
         keyboardType="numeric"
         style={inputStyle}
       />
 
-      {/* Button */}
       <TouchableOpacity
         onPress={handleNext}
         style={{

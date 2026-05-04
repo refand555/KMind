@@ -7,9 +7,17 @@ export const insertMotorParts = (
 ) => {
   parts.forEach((p) => {
     db.runSync(
-      `INSERT INTO motor_parts (motor_id, part_id, status, km_terakhir)
-       VALUES (?, ?, ?, ?)`,
-      [motorId, p.part_id, p.status, p.km_terakhir ?? null]
-    );
+  `INSERT INTO motor_parts 
+   (motor_id, part_id, status, km_terakhir, reminder_date)
+   VALUES (?, ?, ?, ?, ?)`,
+  [
+    motorId,
+    p.part_id,
+    p.status,
+    p.km_terakhir,
+    p.reminder_date ?? null,
+  ]
+);
   });
 };
+
